@@ -3,6 +3,7 @@ package promptui
 import (
 	"fmt"
 	"io"
+	"log"
 	"strings"
 	"text/template"
 
@@ -58,19 +59,22 @@ type Prompt struct {
 // text/template syntax. Custom state, colors and background color are available for use inside
 // the templates and are documented inside the Variable section of the docs.
 //
-// Examples
+// # Examples
 //
 // text/templates use a special notation to display programmable content. Using the double bracket notation,
 // the value can be printed with specific helper functions. For example
 //
 // This displays the value given to the template as pure, unstylized text.
-// 	'{{ . }}'
+//
+//	'{{ . }}'
 //
 // This displays the value colored in cyan
-// 	'{{ . | cyan }}'
+//
+//	'{{ . | cyan }}'
 //
 // This displays the value colored in red with a cyan background-color
-// 	'{{ . | red | cyan }}'
+//
+//	'{{ . | red | cyan }}'
 //
 // See the doc of text/template for more info: https://golang.org/pkg/text/template/
 type PromptTemplates struct {
@@ -109,10 +113,21 @@ type PromptTemplates struct {
 	success    *template.Template
 }
 
+func un(s string) {
+	log.Output(2, "Exiting trace... "+s)
+}
+
+func trace(s string) string {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.Println("Entering trace...", s)
+	return s
+}
+
 // Run executes the prompt. Its displays the label and default value if any, asking the user to enter a value.
 // Run will keep the prompt alive until it has been canceled from the command prompt or it has received a valid
 // value. It will return the value and an error if any occurred during the prompt's execution.
 func (p *Prompt) Run() (string, error) {
+	// defer un(trace("Prompt.Run"))
 	var err error
 
 	err = p.prepareTemplates()

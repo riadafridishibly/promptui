@@ -126,24 +126,27 @@ type Key struct {
 // text/template syntax. Custom state, colors and background color are available for use inside
 // the templates and are documented inside the Variable section of the docs.
 //
-// Examples
+// # Examples
 //
 // text/templates use a special notation to display programmable content. Using the double bracket notation,
 // the value can be printed with specific helper functions. For example
 //
 // This displays the value given to the template as pure, unstylized text. Structs are transformed to string
 // with this notation.
-// 	'{{ . }}'
+//
+//	'{{ . }}'
 //
 // This displays the name property of the value colored in cyan
-// 	'{{ .Name | cyan }}'
+//
+//	'{{ .Name | cyan }}'
 //
 // This displays the label property of value colored in red with a cyan background-color
-// 	'{{ .Label | red | cyan }}'
+//
+//	'{{ .Label | red | cyan }}'
 //
 // See the doc of text/template for more info: https://golang.org/pkg/text/template/
 //
-// Notes
+// # Notes
 //
 // Setting any of these templates will remove the icons from the default templates. They must
 // be added back in each of their specific templates. The styles.go constants contains the default icons.
@@ -230,6 +233,7 @@ func (s *Select) RunCursorAt(cursorPos, scroll int) (int, string, error) {
 }
 
 func (s *Select) innerRun(cursorPos, scroll int, top rune) (int, string, error) {
+	//	defer un(trace("innerRun"))
 	isExit := bool(false)
 
 	c := &readline.Config{
@@ -502,8 +506,9 @@ func (s *Select) prepareTemplates() error {
 
 	if tpls.Help == "" {
 		tpls.Help = fmt.Sprintf(`{{ "Use the arrow keys to navigate:" | faint }} {{ .NextKey | faint }} ` +
-			`{{ .PrevKey | faint }} {{ .PageDownKey | faint }} {{ .PageUpKey | faint }} ` +
-			`{{ if .Search }} {{ "and" | faint }} {{ .SearchKey | faint }} {{ "toggles search" | faint }}{{ end }}`)
+			`{{ .PrevKey | faint }} {{ .PageDownKey | faint }} {{ .PageUpKey | faint }}` +
+			`{{- if .Search }} {{ ";" | faint }} {{ .SearchKey }} {{ "toggles search" | faint }}{{ end }}` +
+			`{{", press" | faint }} {{ .ExitKey }} {{ "to exit." | faint }}`)
 	}
 
 	tpl, err = template.New("").Funcs(tpls.FuncMap).Parse(tpls.Help)
@@ -646,6 +651,7 @@ func (s *Select) renderHelp(b bool) []byte {
 		PageUpKey   string
 		Search      bool
 		SearchKey   string
+		ExitKey     string
 	}{
 		NextKey:     s.Keys.Next.Display,
 		PrevKey:     s.Keys.Prev.Display,
@@ -653,6 +659,7 @@ func (s *Select) renderHelp(b bool) []byte {
 		PageUpKey:   s.Keys.PageUp.Display,
 		SearchKey:   s.Keys.Search.Display,
 		Search:      b,
+		ExitKey:     s.Keys.Exit.Display,
 	}
 
 	return render(s.Templates.help, keys)
